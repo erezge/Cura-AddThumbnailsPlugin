@@ -59,9 +59,11 @@ class AddThumbnails(Script):
         ba64 = self._image_to_base64(snapshot)
         b64str = str(ba64, 'utf-8')
         b64gcode = self._txt_to_gcode(b64str)
-        gcode = self.GCODE_LINE_PREFIX + "\n" + self.GCODE_LINE_PREFIX + "thumbnail begin " + str(width) + "x" + str(height) + " " + str(len(b64str)) + "\n" + \
+        gcode = "\n" + self.GCODE_LINE_PREFIX + "\n" + \
+            self.GCODE_LINE_PREFIX + "thumbnail begin " + str(width) + "x" + str(height) + " " + str(len(b64str)) + "\n" + \
             b64gcode + "\n" + \
             self.GCODE_LINE_PREFIX + "thumbnail end\n" + self.GCODE_LINE_PREFIX + "\n"
+
         return gcode
 
 
@@ -76,7 +78,7 @@ class AddThumbnails(Script):
                 "turn_on":
                 {
                     "label": "Enable",
-                    "description": "When enabled, Thumbnail will be added to the gcode file.",
+                    "description": "When enabled, thumbnail will be added to the gcode file.",
                     "type": "bool",
                     "default_value": true
                 },
@@ -86,7 +88,7 @@ class AddThumbnails(Script):
                     "description": "Width of the thumbnail",
                     "unit": "pixels",
                     "type": "int",
-                    "default_value": 220,
+                    "default_value": 16,
                     "minimum_value": "16",
                     "minimum_value_warning": "16"
                 },
@@ -96,9 +98,38 @@ class AddThumbnails(Script):
                     "description": "Height of the thumbnail",
                     "unit": "pixels",
                     "type": "int",
-                    "default_value": 220,
+                    "default_value": 16,
                     "minimum_value": "16",
                     "minimum_value_warning": "16"
+                },
+                "second_thumbnail":
+                {
+                    "label": "Add Second Thumbnail",
+                    "description": "When enabled, a second thumbnail will be added to the gcode file.",
+                    "type": "bool",
+                    "default_value": true
+                },
+                "thumbnail2_width":
+                {
+                    "label": "Second Thumbnail Width",
+                    "description": "Width of the thumbnail",
+                    "unit": "pixels",
+                    "type": "int",
+                    "default_value": 220,
+                    "minimum_value": "16",
+                    "minimum_value_warning": "16",
+                    "enabled": "second_thumbnail"
+                },
+                "thumbnail2_height":
+                {
+                    "label": "Second Thumbnail Height",
+                    "description": "Height of the thumbnail",
+                    "unit": "pixels",
+                    "type": "int",
+                    "default_value": 124,
+                    "minimum_value": "16",
+                    "minimum_value_warning": "16",
+                    "enabled": "second_thumbnail"
                 }
             }
         }"""
@@ -108,12 +139,22 @@ class AddThumbnails(Script):
     #   \return New list of layers.
     def execute(self, data: List[str]) -> List[str]:
         turn_on = self.getSettingValueByKey("turn_on")
-        thumbnail_width = self.getSettingValueByKey("thumbnail_width")
-        thumbnail_height = self.getSettingValueByKey("thumbnail_height")
-        Logger.log("d", "Adding thumbnail image enabled=" + str(turn_on) + " resolution=" + str(thumbnail_width) + "x" + str(thumbnail_height))
 
         if turn_on :
+            thumbnail_width = self.getSettingValueByKey("thumbnail_width")
+            thumbnail_height = self.getSettingValueByKey("thumbnail_height")
+            Logger.log("d", "Adding thumbnail image, resolution=" + str(thumbnail_width) + "x" + str(thumbnail_height))
+            second_thumbnail = self.getSettingValueByKey("second_thumbnail")
             thumbnail_gcode = self._create_thumbnail_gcode(thumbnail_width, thumbnail_height)
-            data[0] = data[0] + thumbnail_gcode
+            if second_thumbnail :
+                thumbnail2_width = self.getSettingValueByKey("thumbnail2_width")
+                thumbnail2_height = self.getSettingValueByKey("thumbnail2_height")
+                Logger.log("d", "Adding second thumbnail image, resolution=" + str(thumbnail2_width) + "x" + str(thumbnail2_height))
+                thumbnail_gcode = thumbnail_gcode + self._create_thumbnail_gcode(thumbnail2_width, thumbnail2_height)
+
+            data[0] = data[0] + thumbnail_gcode + "\n"
+        else :
+            Logger.log("d", "Adding thumbnail image disabled")
+
 
         return data
