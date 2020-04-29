@@ -6,7 +6,7 @@ from ..Script import Script
 from UM.Application import Application #To get the current printer's settings.
 from UM.Logger import Logger
 from cura.Snapshot import Snapshot
-from PyQt5.QtCore import QByteArray, QBuffer, QIODevice
+from PyQt5.QtCore import Qt, QByteArray, QBuffer, QIODevice
 from PyQt5.QtGui import QImage
 from typing import List
 import textwrap
@@ -48,7 +48,14 @@ class AddThumbnails(Script):
             return None
 
     def _create_thumbnail_gcode(self, width, height) -> str:
-        snapshot = self._create_snapshot(width, height)
+        min_size = min(width,height)
+        tmp_snapshot = self._create_snapshot(min_size, min_size)
+         # Scale it to the correct size
+        if (width != height):
+            snapshot = tmp_snapshot.copy(int((min_size-width)/2), int((min_size-height)/2), width, height)
+        else:
+            snapshot = tmp_snapshot
+
         ba64 = self._image_to_base64(snapshot)
         b64str = str(ba64, 'utf-8')
         b64gcode = self._txt_to_gcode(b64str)
