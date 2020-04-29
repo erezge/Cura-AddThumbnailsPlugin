@@ -1,6 +1,6 @@
 # Cura-AddThumbnailsPlugin
 
-Cura post processing script for adding thumbnails to gcode file. This follows PrusaSlicer's thumbnail gcode embedding feature.
+Cura post processing script for adding thumbnails to the gcode file. This follows PrusaSlicer's thumbnail gcode embedding feature.
 
 If you are using OctoPrint, you can install https://plugins.octoprint.org/plugins/prusaslicerthumbnails/ and see the thumbnails in OctoPrint's dashboard.
 
